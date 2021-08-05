@@ -39,20 +39,20 @@ knit_hooks$set(output = function(x, options) {
 ``` 
 
 ## Executive Summary
-In this analysis we are interested in finding which type of transmission (coded as 'am' where 0 = automatic, 1 = manual) is more efficient in terms of miles per gallon (mpg) using the mtcars dataset in R.The exploratory analyzes of the data suggested that manual transmissions yield higher average mpg than automatic transmissions. This relationship was further analyzed using nested multivariable linear regression models. The variables cyl and disp were removed from the linear regression due to high collinearity with other predictors. Based on this regression it was concluded that manual transmissions yield, in average, 2.4 mpg more than automatic transmissions.
+In this analysis we are interested in finding which type of transmission (coded as 'am' where 0 = automatic, 1 = manual) is more efficient in terms of miles per gallon (mpg) using the mtcars dataset in R.The exploratory analysis of the data suggested that manual transmissions yield higher average mpg than automatic transmissions. This relationship was further analyzed using nested multivariable linear regression models. The variables cyl and disp were removed from the linear regression due to high collinearity with other predictors. Based on this regression it was concluded that manual transmissions do not yield a statistically significant difference in mpg compared to automatic transmissions.
 
 ## Loading the mtcars data and performing some basic exploratory data analysis
 
 ```{r collapse=TRUE}
 library(usdm)
-str(mtcars)
+data(mtcars); str(mtcars)
 ```
 The mtcars dataset contains 32 observation and 11 variables. This data was further summarized based on the transmission type to explore its relationship with the other variables. It is worth noting that manual transmission yielded higher miles per gallons than automatic transmission (see Appendix A - Table 1: mpg mean values). Linear regression models will be created to analyze the relationship between transmission type and mpg. This analysis will assume that the variable mpg is the desired outcome and the rest of the variables are predictors.
 
 It can be expected that some of the predictors have high correlation values (see Appendix A - Plot 1). Variable correlation was further analyzed using variance inflation factors.
 
-```{r collapse=TRUE, output.lines=c(1,3,5:7)}
-vifcor(subset(mtcars,select = (-mpg)),th = 0.8)
+```{r collapse=TRUE, output.lines = c(1,3,5:7)}
+vifcor(subset(mtcars,select = (-mpg)),th = 0.8) #correlation treshold set to 0.8
 ```
 The vifcor function excludes any predictor with a VIF > 10 since the information that these predictors provide about the response is redundant in the presence of the other variables. Using the vif values as a  guide, the variables disp and cyl were removed from the linear regression model. The effect of removing these predictors were analyzed using anova and the Shaphiro-Wilk test. The results from these tests are shown on the next session.
 
@@ -61,11 +61,11 @@ The vifcor function excludes any predictor with a VIF > 10 since the information
 # Creating 3 nested linear models:
 fit1 <- lm(mpg~factor(am),mtcars)
 fit2 <- lm(mpg~factor(am)+. -am,mtcars)
-fit3 <- lm(mpg~factor(am)+. -am -disp -cyl, mtcars)
+fit3 <- lm(mpg~factor(am) +. -disp -cyl -am, mtcars)
 # Comparing the 3 models unsing anova
 anova(fit1,fit3,fit2)
 ```
-The p-values of the anova test shows that the most significant model is fit3, p-value = 5.772e-06. Checking that the residuals of fit3 follow normality:
+The p-values of the anova test shows that the most significant model is fit3, p-value = 5.772-06. Checking that the residuals of fit3 follow normality:
 ```{r collapse=TRUE, output.lines = c(2,5)}
 shapiro.test(fit3$residuals)
 ```
@@ -75,7 +75,7 @@ The Shapiro-Wilk p-value of 0.3727 fails to reject normality of the residuals. N
 cbind(summary(fit1)$adj.r.squared,summary(fit2)$adj.r.squared,summary(fit3)$adj.r.squared )
 ```
 ## Conclusion
-Based on the analysis performed, the coefficients of the linear model fit3 can be used to summarize the relationship between transmission type and mpg. The coefficient for manual transmission estimates that manual transmissions yield, in average, 2.4 mpg more than automatic transmissions.
+Based on the analysis performed, the coefficients of the linear model fit3 can be used to summarize the relationship between transmission type and mpg. The coefficient for manual transmission estimates that manual transmissions yield, in average, 2.4 mpg more than automatic transmissions. However, the p-value of this estimate is greater than 0.05 which makes it not statistically significant.The rest of the coefficients indicate that weight is the only predictor that has a statistically significant impact on mpg when cylinder and displacement are held constant.
 
 \newpage
 ## Appendix A - Exploratory Graphs and Table
